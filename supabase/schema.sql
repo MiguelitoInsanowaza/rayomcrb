@@ -50,6 +50,10 @@ create table if not exists public.rules (
 -- Solo los usuarios con sesion (los admins que crees en Authentication > Users)
 -- pueden ver y editar. El programa (.exe) NO tiene acceso directo a las tablas:
 -- solo puede llamar a las 3 funciones de abajo.
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on public.licenses, public.scans, public.rules to authenticated;
+revoke all on public.licenses, public.scans, public.rules from anon;
+
 alter table public.licenses enable row level security;
 alter table public.scans    enable row level security;
 alter table public.rules    enable row level security;
