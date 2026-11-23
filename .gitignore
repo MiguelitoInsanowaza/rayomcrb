@@ -1,0 +1,10 @@
+# Archivos de compilacion
+*.exe
+*.obj
+*.pdb
+*.ilk
+*.manifest
+compilacion_log.txt
+
+# Reportes generados
+SS_Reporte_*.txt
