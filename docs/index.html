@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel · Minecraft SS Tool</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+  <!-- Falta configurar -->
+  <div id="setup" class="center hidden">
+    <div class="card narrow">
+      <div class="logo">SS</div>
+      <h1>Falta configurar el panel</h1>
+      <p class="muted">Abre <code>docs/config.js</code> y pega la <b>Project URL</b> y la clave <b>anon / publishable</b>
+        de tu proyecto de Supabase (Project Settings → API). Luego sube el cambio a GitHub.</p>
+    </div>
+  </div>
+
+  <!-- Login -->
+  <div id="login" class="center hidden">
+    <form id="login-form" class="card narrow">
+      <div class="logo">SS</div>
+      <h1>Minecraft SS Tool</h1>
+      <p class="muted">Panel del staff</p>
+      <label>Correo<input id="login-email" type="email" autocomplete="username" required></label>
+      <label>Contraseña<input id="login-pass" type="password" autocomplete="current-password" required></label>
+      <button class="btn primary full" type="submit">Entrar</button>
+      <p id="login-error" class="error"></p>
+    </form>
+  </div>
+
+  <!-- App -->
+  <div id="app" class="hidden">
+    <header class="topbar">
+      <div class="brand"><div class="logo small">SS</div><div><b>Minecraft SS Tool</b><span class="muted">Panel del staff</span></div></div>
+      <nav class="tabs">
+        <button data-tab="scans" class="tab">Escaneos</button>
+        <button data-tab="lic" class="tab">Licencias</button>
+        <button data-tab="rules" class="tab">Mods y webs prohibidos</button>
+      </nav>
+      <div class="user"><span id="user-email" class="muted"></span><button id="logout" class="btn small">Salir</button></div>
+    </header>
+
+    <main>
+      <!-- Escaneos -->
+      <section id="tab-scans" class="hidden">
+        <div class="stats">
+          <div class="stat"><span class="muted">Escaneos</span><b id="st-total">—</b></div>
+          <div class="stat"><span class="muted">Con alertas</span><b id="st-alerts" class="red">—</b></div>
+          <div class="stat"><span class="muted">Limpios</span><b id="st-clean" class="green">—</b></div>
+          <div class="stat"><span class="muted">Hoy</span><b id="st-today">—</b></div>
+        </div>
+        <div class="card">
+          <div class="toolbar">
+            <h2>Escaneos recibidos</h2>
+            <div class="row">
+              <input id="scan-search" type="search" placeholder="Buscar PC, usuario o licencia…">
+              <button id="scan-refresh" class="btn">Actualizar</button>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Fecha</th><th>PC</th><th>Usuario de Windows</th><th>Licencia</th><th>Resultado</th><th></th></tr></thead>
+            <tbody id="scans-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Licencias -->
+      <section id="tab-lic" class="hidden">
+        <form id="lic-form" class="card">
+          <h2>Crear licencias</h2>
+          <div class="grid">
+            <label>Nota (para quién es)<input id="lic-note" placeholder="Ej: SS a Jugador123"></label>
+            <label>Usos máximos<input id="lic-uses" type="number" min="1" placeholder="Vacío = ilimitado"></label>
+            <label>Vence el<input id="lic-exp" type="date"></label>
+            <label>Cantidad<input id="lic-qty" type="number" min="1" max="50" value="1"></label>
+          </div>
+          <label class="check"><input id="lic-lock" type="checkbox"> Vincular a la primera PC que la use</label>
+          <button class="btn primary" type="submit">Crear licencia</button>
+          <div id="lic-created" class="created hidden"></div>
+        </form>
+        <div class="card">
+          <div class="toolbar"><h2>Licencias</h2><button id="lic-refresh" class="btn">Actualizar</button></div>
+          <table>
+            <thead><tr><th>Código</th><th>Nota</th><th>Usos</th><th>Vence</th><th>PC</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="lic-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Reglas -->
+      <section id="tab-rules" class="hidden">
+        <form id="rule-form" class="card">
+          <h2>Agregar mod, página o programa prohibido</h2>
+          <p class="muted">El programa ya trae una lista base (AutoTotem, X-Ray, Freecam, Doomsday, etc.).
+            Lo que agregues aquí se descarga en cada escaneo, sin recompilar.
+            En <b>palabras</b> pon cómo se llama el mod o la página, separado por comas (ej: <code>freecam,free_cam</code>).</p>
+          <div class="grid">
+            <label>Tipo
+              <select id="rule-type">
+                <option value="mod">Mod (.jar, también busca dentro del archivo)</option>
+                <option value="web">Página web (historial)</option>
+                <option value="process">Programa / proceso</option>
+              </select>
+            </label>
+            <label>Nombre<input id="rule-name" placeholder="Ej: Freecam" required></label>
+            <label class="span2">Palabras a buscar<input id="rule-tokens" placeholder="freecam,free_cam" required></label>
+          </div>
+          <button class="btn primary" type="submit">Agregar</button>
+        </form>
+        <div class="card">
+          <div class="toolbar"><h2>Reglas del panel</h2><button id="rule-refresh" class="btn">Actualizar</button></div>
+          <table>
+            <thead><tr><th>Tipo</th><th>Nombre</th><th>Palabras</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="rules-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Detalle de escaneo -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div><h2 id="m-title">Escaneo</h2><div id="m-meta" class="muted"></div></div>
+        <button id="m-close" class="btn small">Cerrar</button>
+      </div>
+      <div id="m-body" class="modal-body"></div>
+      <div class="modal-foot">
+        <button id="m-download" class="btn">Descargar .txt</button>
+        <button id="m-delete" class="btn danger">Eliminar escaneo</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+</body>
+</html>
